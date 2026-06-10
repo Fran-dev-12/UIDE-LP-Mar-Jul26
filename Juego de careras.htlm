@@ -1,0 +1,71 @@
+import tkinter as tk
+import random
+
+w = tk.Tk()
+w.title("Carreras")
+w.geometry("800x600")
+lienzo = tk.Canvas(w, width=800, height=600, bg="gray20")
+lienzo.pack()
+
+pos = 375
+auto = lienzo.create_rectangle(pos, 550, pos+50, 590, fill="blue")
+lista_malos = []
+pts = 0
+etiqueta = tk.Label(w, text=f"Pts: {pts}", font=("Arial", 16, "bold"), bg="black", fg="white")
+etiqueta.pack()
+
+def izquierda(event):
+    global pos
+    if pos > 150:
+        pos -= 30
+        lienzo.coords(auto, pos, 550, pos+50, 590)
+
+def derecha(event):
+    global pos
+    if pos < 600:
+        pos += 30
+        lienzo.coords(auto, pos, 550, pos+50, 590)
+
+def nuevo_obstaculo():
+    x = random.randint(150, 600)
+    lista_malos.append(lienzo.create_rectangle(x, 0, x+50, 40, fill="red"))
+
+def mover_obstaculos():
+    global pts
+    for malo in lista_malos[:]:
+        lienzo.move(malo, 0, 10)
+        coord = lienzo.coords(malo)
+        
+        if coord[1] > 600:
+            lienzo.delete(malo)
+            lista_malos.remove(malo)
+            pts += 10
+            etiqueta.config(text=f"Pts: {pts}")
+        
+        if abs(coord[0] - pos) < 50 and abs(coord[1] - 550) < 50:
+            lienzo.create_text(400, 300, text="FIN", font=("Arial", 40), fill="red")
+            w.after(2000, w.destroy)
+            return
+    
+    w.after(50, mover_obstaculos)
+
+def raya():
+    for i in range(0, 600, 50):
+        linea = lienzo.create_line(400, i, 400, i+25, fill="yellow", width=3)
+        lienzo.move(linea, 0, 10)
+        if lienzo.coords(linea)[1] > 600:
+            lienzo.coords(linea, 400, -25, 400, 0)
+    w.after(100, raya)
+
+def ciclo():
+    nuevo_obstaculo()
+    w.after(random.randint(800, 1500), ciclo)
+
+w.bind("<Left>", izquierda)
+w.bind("<Right>", derecha)
+w.focus_set()
+
+raya()
+ciclo()
+mover_obstaculos()
+w.mainloop() 
